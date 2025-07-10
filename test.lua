@@ -12,54 +12,6 @@ function CoroutineScheduler:Run(func)
     })
 end
 
-function async(func)
-    CoroutineScheduler:Run(func)
-end
-
-function wait(seconds)
-    return coroutine.yield(seconds)
-end
-
-function setTimeout(delaySeconds, callback)
-    async(function()
-        wait(delaySeconds)
-        callback()
-    end)
-end
-
-function setLoop(intervalSeconds, callback)
-    async(function()
-        while true do
-            wait(intervalSeconds)
-            callback()
-        end
-    end)
-end
-
-function WaitForChild(parent, childName, timeout)
-    -- Immediate check if child exists
-    if parent[childName] ~= nil then
-        return parent[childName]
-    end
-
-    local timeWaited = 0
-    while true do
-        -- Yield until next frame and get frame delta time
-        local dt = wait(0)
-        timeWaited = timeWaited + dt
-
-        -- Re-check for child existence each frame
-        if parent[childName] ~= nil then
-            return parent[childName]
-        end
-
-        -- Handle timeout if specified
-        if timeout and timeWaited >= timeout then
-            error(string.format("waitForChild: Timed out after %.2f seconds waiting for '%s'", timeout, childName))
-        end
-    end
-end
-
 local scheduler = CoroutineScheduler
 
 Hooks:PostHook(CoreSetup, "__update", "CoroutineSchedulerUpdate", function(self, _, dt)
@@ -83,3 +35,79 @@ Hooks:PostHook(CoreSetup, "__update", "CoroutineSchedulerUpdate", function(self,
         end
     end
 end)
+
+local function error(...)
+    log("[BloxLib] [ERROR] " .. tostring(...))
+end
+
+local function warn(...)
+    log("[BloxLib] [Warning] " .. tostring(...))
+end
+
+function async(func) -- Runs the given function as a coroutine without obstructing the main thread
+    CoroutineScheduler:Run(func)
+end
+
+-- /////////////////////////////////////////////////////////////////////////
+-- /// Helper functions that need to be called within an async context ////
+-- ////////////////////////////////////////////////////////////////////////
+
+function wait(seconds) -- [ASYNC] Waits for a specified number of seconds
+    return coroutine.yield(seconds)
+end
+
+function WaitForChild(parent, childName, timeout) -- [ASYNC] Waits for a child to be added to the parent object and returns it. Defaults to no timeout
+    if parent[childName] ~= nil then
+        return parent[childName]
+    end
+
+    if not timeout then
+        warn("WaitForChild(" .. childName .. ") called without timeout. This may lead to an infinite yield if the child never appears.")
+    end
+
+    local timeWaited = 0
+    while true do
+        local dt = wait()
+        timeWaited = timeWaited + dt
+
+        if parent[childName] ~= nil then
+            return parent[childName]
+        end
+
+        if timeout and timeWaited >= timeout then
+            error(string.format("WaitForChild() Timed out after %.2f seconds waiting for '%s'", timeout, childName))
+            break
+        end
+    end
+end
+
+-- ///////////////////////////////////////////////////////////////////////////////////////////////////
+-- /// Helper functions that can be called outside of async context (they call async when needed) ///
+-- /////////////////////////////////////////////////////////////////////////////////////////////////
+
+function Delay(delaySeconds, callback) -- Delays execution of callback by delaySeconds
+    async(function()
+        wait(delaySeconds)
+        callback()
+    end)
+end
+
+function Loop(intervalSeconds, callback) -- Spawns infinite loop that calls callback every intervalSeconds
+    async(function()
+        while true do
+            wait(intervalSeconds)
+            callback()
+        end
+    end)
+end
+
+function loopUntil(intervalSeconds, callback, timeout) -- Spawns a loop that calls callback every intervalSeconds until timeout is reached
+    async(function()
+        local elapsed = 0
+        while elapsed < timeout do
+            wait(intervalSeconds)
+            callback()
+            elapsed = elapsed + intervalSeconds
+        end
+    end)
+end
