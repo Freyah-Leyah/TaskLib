@@ -12,6 +12,10 @@ function CoroutineScheduler:Run(func)
     })
 end
 
+function async(func)
+    CoroutineScheduler:Run(func)
+end
+
 function wait(seconds)
     return coroutine.yield(seconds)
 end
@@ -23,7 +27,7 @@ function setTimeout(delaySeconds, callback)
     end)
 end
 
-function setInterval(intervalSeconds, callback)
+function setLoop(intervalSeconds, callback)
     async(function()
         while true do
             wait(intervalSeconds)
@@ -32,8 +36,28 @@ function setInterval(intervalSeconds, callback)
     end)
 end
 
-function async(func)
-    CoroutineScheduler:Run(func)
+function WaitForChild(parent, childName, timeout)
+    -- Immediate check if child exists
+    if parent[childName] ~= nil then
+        return parent[childName]
+    end
+
+    local timeWaited = 0
+    while true do
+        -- Yield until next frame and get frame delta time
+        local dt = wait(0)
+        timeWaited = timeWaited + dt
+
+        -- Re-check for child existence each frame
+        if parent[childName] ~= nil then
+            return parent[childName]
+        end
+
+        -- Handle timeout if specified
+        if timeout and timeWaited >= timeout then
+            error(string.format("waitForChild: Timed out after %.2f seconds waiting for '%s'", timeout, childName))
+        end
+    end
 end
 
 local scheduler = CoroutineScheduler
