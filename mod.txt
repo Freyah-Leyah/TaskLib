@@ -1,16 +1,15 @@
 {
-    "name": "BloxLib",
-    "description": "Gameplay Overhaul",
+    "name": "TaskLib",
+    "description": "Adds a task library to make it easier to run code asynchronously.",
     "author": "Freyah",
-    "version": "4.0.0",
+    "version": "0.1",
     "color" : "0 0 0",
-    "contact" : "Discord: freyah_",
     "priority" : 99999,
     "hooks" : [
 		
 		{ 
 			"hook_id" : "core/lib/setups/coresetup", 
-			"script_path" : "test.lua" 
-		},
+			"script_path" : "async.lua" 
+		}
     ]
 }
