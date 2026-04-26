@@ -50,6 +50,10 @@ local function createTask(func, name, run_once)
         run_once = run_once or false
     }
 
+    function entry:cancel()
+        self.cancelled = true
+    end
+
     table.insert(scheduler.coroutines, entry)
     return entry
 end
