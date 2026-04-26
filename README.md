@@ -1,12 +1,14 @@
 # TaskLib for Payday 2: Coroutine Scheduler
 
-TaskLib provides a centralized coroutine scheduler tailored for Payday 2. It hooks into the CoreSetup update loop, allowing developers to write asynchronous logic without relying on manual update(dt) state tracking or complex timer tables.
+TaskLib provides a coroutine scheduler for Payday 2. It hooks into the CoreSetup update loop, allowing developers to write asynchronous logic without relying on easier loop, waits and events managment.
 
 ## Getting Started
 
 TaskLib is accessible globally via the task table (or `_G.task`). Because it automatically hooks into `CoreSetup:__update`, tasks are processed automatically each frame.
 
-**Important:** Any function that yields (e.g., `task.wait()` or `task.WaitForChild()`) must be executed within a coroutine initialized by this library.
+**❗Important:** Any function that yields (e.g., `task.wait()` or `task.WaitForChild()`) must be executed within a coroutine initialized by this library.
+
+**Note**: For stability reasons, there is a hardcoded limit of 100 task resumes per frame. If this limit is reached, any remaining tasks will be skipped for the current frame and resumed during the next one. (You will probably never reach that limit though)
 
 ## Core API: Managing Tasks
 
@@ -21,7 +23,7 @@ _(Alias: task.new)_
 - **func** _(function)_: The function to execute asynchronously.
 - **name** _(string, optional)_: An identifier for the task, useful for debugging. Defaults to "Task#ID".
 - **run_once** _(boolean, optional)_: If true, the task is removed from the scheduler after its initial execution, regardless of yielding. Defaults to false.
-- **Returns:** A `TaskHandle` table.
+- **Returns:** TaskHandle table.
 
 **Example:**
 ```lua
@@ -35,7 +37,7 @@ end, "InitializationTask")
 
 Terminates a scheduled task. The task is marked as cancelled and will be removed during the next frame update.
 
-- **handle** _(TaskHandle)_: The handle returned by task.spawn.
+- **handle** _(TaskHandle)_: The handle returned by task.spawn().
 
 **Example:**
 ```lua
