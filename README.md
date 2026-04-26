@@ -103,7 +103,7 @@ Yields the coroutine until a specific key is populated within a parent table.
 **Example:**
 ```lua
 task.spawn(function()  
-  -- Wait up to 10 seconds for the localization manager to initialize  
+  -- Wait up to 10 seconds for the player manager to initialize  
   local loc = task.WaitForChild(managers, "player", 10)  
   if loc then  
       log("Player manager is ready.")  
