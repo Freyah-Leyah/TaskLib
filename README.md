@@ -1,6 +1,6 @@
 # TaskLib for Payday 2: Coroutine Scheduler
 
-TaskLib provides a coroutine scheduler for Payday 2. It hooks into the CoreSetup update loop, allowing developers to write asynchronous logic without relying on easier loop, waits and events managment.
+TaskLib provides a coroutine scheduler for Payday 2. It hooks into the CoreSetup update loop, allowing developers to write asynchronous logic providing easier loop, waits and events managment.
 
 ## Getting Started
 
