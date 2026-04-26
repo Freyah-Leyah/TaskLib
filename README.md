@@ -14,7 +14,7 @@ TaskLib is accessible globally via the task table (or `_G.task`). Because it aut
 
 These functions are used to initialize, terminate, and monitor tasks.
 
-### task.spawn(func, \[name\], \[run_once\])
+### `task.spawn(func, \[name\], \[run_once\])`
 
 Creates and immediately schedules a new coroutine.
 
@@ -33,7 +33,7 @@ local myTask = task.spawn(function()
       log("Task completed after 2 seconds.")
 end, "InitializationTask")
 ```
-### task.cancel(handle)
+### `task.cancel(handle)`
 
 Terminates a scheduled task. The task is marked as cancelled and will be removed during the next frame update.
 
@@ -48,7 +48,7 @@ end)
 -- Cancel the task before it can finish waiting  
 task.cancel(myTask)
 ```
-### task.isRunning(handle)
+### `task.isRunning(handle)`
 
 Evaluates whether a specific task is currently active in the scheduler.
 
@@ -62,7 +62,7 @@ local myTask = task.spawn(function()
 end)
 log(tostring(task.isRunning(myTask))) -- Outputs: true
 ```
-### task.stats()
+### `task.stats()`
 
 Logs and returns the total number of currently active tasks. Useful for memory management and debugging runaway loops.
 
@@ -82,7 +82,7 @@ end
 
 These functions yield the current coroutine. They must be called from within a task.spawn callback.
 
-### task.wait(\[seconds\])
+### `task.wait(\[seconds\])`
 
 Yields the current coroutine for a specified duration.
 
@@ -96,7 +96,7 @@ task.spawn(function()
     log("Sequence complete.")  
 end)
 ```
-### task.WaitForChild(parent, childName, \[timeoutSeconds\])
+### `task.WaitForChild(parent, childName, \[timeoutSeconds\])`
 
 Yields the coroutine until a specific key is populated within a parent table.
 
@@ -125,7 +125,7 @@ end)
 
 Utility wrappers for common delay and interval operations. These do not require manual coroutine initialization.
 
-### task.delay(seconds, callback, \[name\])
+### `task.delay(seconds, callback, \[name\])`
 
 Executes a callback function after a specified delay.
 
@@ -141,7 +141,7 @@ task.delay(3, function()
     log("This executes exactly 3 seconds later.")  
 end, "DelayedLog")
 ```
-### task.every(intervalSeconds, callback, \[name\])
+### `task.every(intervalSeconds, callback, \[name\])`
 
 Executes a callback repeatedly at a specified interval. The loop terminates if the callback explicitly returns false.
 
@@ -169,7 +169,7 @@ task.every(1, function()
 return false -- Cancel loop once fully healed  
 end, "RegenLoop")
 ```
-### task.loopUntil(intervalSeconds, callback, timeoutSeconds, \[name\])
+### `task.loopUntil(intervalSeconds, callback, timeoutSeconds, \[name\])`
 
 Executes a callback repeatedly at a specified interval, terminating automatically when the maximum duration is reached.
 
