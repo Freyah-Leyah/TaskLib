@@ -4,9 +4,9 @@ TaskLib provides a centralized coroutine scheduler tailored for Payday 2. It hoo
 
 ## Getting Started
 
-TaskLib is accessible globally via the task table (or \_G.task). Because it automatically hooks into CoreSetup:\_\_update, tasks are processed automatically each frame.
+TaskLib is accessible globally via the task table (or `_G.task`). Because it automatically hooks into `CoreSetup:__update`, tasks are processed automatically each frame.
 
-**Important:** Any function that yields (e.g., task.wait() or task.WaitForChild()) must be executed within a coroutine initialized by this library.
+**Important:** Any function that yields (e.g., `task.wait()` or `task.WaitForChild()`) must be executed within a coroutine initialized by this library.
 
 ## Core API: Managing Tasks
 
@@ -21,16 +21,16 @@ _(Alias: task.new)_
 - **func** _(function)_: The function to execute asynchronously.
 - **name** _(string, optional)_: An identifier for the task, useful for debugging. Defaults to "Task#ID".
 - **run_once** _(boolean, optional)_: If true, the task is removed from the scheduler after its initial execution, regardless of yielding. Defaults to false.
-- **Returns:** A TaskHandle table.
+- **Returns:** A `TaskHandle` table.
 
 **Example:**
-
-local myTask = task.spawn(function()  
-log("Task initialized.")  
-task.wait(2)  
-log("Task completed after 2 seconds.")  
+```lua
+local myTask = task.spawn(function()
+      log("Task initialized.")
+      task.wait(2)
+      log("Task completed after 2 seconds.")
 end, "InitializationTask")
-
+```
 ### task.cancel(handle)
 
 Terminates a scheduled task. The task is marked as cancelled and will be removed during the next frame update.
@@ -38,28 +38,28 @@ Terminates a scheduled task. The task is marked as cancelled and will be removed
 - **handle** _(TaskHandle)_: The handle returned by task.spawn.
 
 **Example:**
-
+```lua
 local myTask = task.spawn(function()  
-task.wait(10)  
-log("This will not print.")  
+      task.wait(10)  
+      log("This will not print.")  
 end)  
-<br/>\-- Cancel the task before it can finish waiting  
+-- Cancel the task before it can finish waiting  
 task.cancel(myTask)
-
+```
 ### task.isRunning(handle)
 
 Evaluates whether a specific task is currently active in the scheduler.
 
-- **handle** _(TaskHandle)_: The task handle to evaluate.
+- **handle** _(TaskHandle)_: The task handle to check.
 - **Returns:** true if the task is active and has not been cancelled or finished; false otherwise.
 
 **Example:**
-
+```lua
 local myTask = task.spawn(function()  
-task.wait(5)  
-end)  
-<br/>log(tostring(task.isRunning(myTask))) -- Outputs: true
-
+      task.wait(5)  
+end)
+log(tostring(task.isRunning(myTask))) -- Outputs: true
+```
 ### task.stats()
 
 Logs and returns the total number of currently active tasks. Useful for memory management and debugging runaway loops.
@@ -67,12 +67,12 @@ Logs and returns the total number of currently active tasks. Useful for memory m
 - **Returns:** _(number)_ The count of active tasks.
 
 **Example:**
-
+```lua
 local activeCount = task.stats()  
-if activeCount > 50 then  
-log("\[Warning\] High number of active tasks: " .. tostring(activeCount))  
-end
-
+      if activeCount > 50 then  
+          log("[Warning] High number of active tasks: " .. tostring(activeCount))
+      end
+```
 ## Async Helpers (Yielding)
 
 These functions yield the current coroutine. They must be called from within a task.spawn callback.
@@ -84,13 +84,13 @@ Yields the current coroutine for a specified duration.
 - **seconds** _(number, optional)_: The duration to yield in seconds. If omitted or set to 0, it yields for exactly one frame.
 
 **Example:**
-
+```lua
 task.spawn(function()  
-managers.chat:feed_system_message(1, "Starting sequence...")  
-task.wait(2.5) -- Yields for 2.5 seconds  
-managers.chat:feed_system_message(1, "Sequence complete.")  
+    log("Starting sequence...")  
+    task.wait(2.5) -- Yields for 2.5 seconds  
+    log("Sequence complete.")  
 end)
-
+```
 ### task.WaitForChild(parent, childName, \[timeoutSeconds\])
 
 Yields the coroutine until a specific key is populated within a parent table.
@@ -101,17 +101,17 @@ Yields the coroutine until a specific key is populated within a parent table.
 - **Returns:** The assigned value, or nil if the timeout is reached.
 
 **Example:**
-
+```lua
 task.spawn(function()  
-\-- Wait up to 10 seconds for the localization manager to initialize  
-local loc = task.WaitForChild(managers, "localization", 10.0)  
-<br/>if loc then  
-log("Localization manager is ready.")  
-else  
-log("\[Error\] Localization manager failed to load within timeout.")  
-end  
+  -- Wait up to 10 seconds for the localization manager to initialize  
+  local loc = task.WaitForChild(managers, "player", 10)  
+  if loc then  
+      log("Player manager is ready.")  
+   else  
+      log("[Error] Player manager failed to load within timeout.")  
+  end  
 end)
-
+```
 ## Timer Utilities
 
 Utility wrappers for common delay and interval operations. These do not require manual coroutine initialization.
@@ -127,11 +127,11 @@ _(Alias: task.timeout)_
 - **name** _(string, optional)_: Task identifier.
 
 **Example:**
-
+```lua
 task.delay(3.0, function()  
-log("This executes exactly 3 seconds later.")  
+    log("This executes exactly 3 seconds later.")  
 end, "DelayedLog")
-
+```
 ### task.every(intervalSeconds, callback, \[name\])
 
 Executes a callback repeatedly at a specified interval. The loop terminates if the callback explicitly returns false.
@@ -143,20 +143,23 @@ _(Alias: task.loopInf)_
 - **name** _(string, optional)_: Task identifier.
 
 **Example:**
-
+```lua
 task.every(1.0, function()  
-local player = managers.player:player_unit()  
-if not alive(player) then  
-return false -- Returning false cancels the interval loop  
-end  
-<br/>local damage_ext = player:character_damage()  
-if damage_ext:get_real_health() < damage_ext:\_max_health() then  
-damage_ext:restore_health(5, false)  
-return true  
-end  
-<br/>return false -- Cancel loop once fully healed  
+    local player = managers.player:player_unit()  
+    
+    if not alive(player) then 
+      return false -- Returning false cancels the interval loop  
+    end  
+    
+    local damage_ext = player:character_damage()
+    if damage_ext:get_real_health() < damage_ext:_max_health() then  
+        damage_ext:restore_health(5, false)  
+        return true  
+    end
+    
+return false -- Cancel loop once fully healed  
 end, "RegenLoop")
-
+```
 ### task.loopUntil(intervalSeconds, callback, timeoutSeconds, \[name\])
 
 Executes a callback repeatedly at a specified interval, terminating automatically when the maximum duration is reached.
@@ -167,10 +170,11 @@ Executes a callback repeatedly at a specified interval, terminating automaticall
 - **name** _(string, optional)_: Task identifier.
 
 **Example:**
-
+```lua
 task.loopUntil(0.5, function()  
-log("Checking conditions...")  
-\-- Condition logic here  
-return true  
+      log("Checking conditions...")  
+      -- Condition logic here  
+      return true  
 end, 5.0, "StartupCheck")  
-\-- This will log every 0.5 seconds for a maximum of 5 seconds.
+-- This will log every 0.5 seconds for a maximum of 5 seconds.
+```
