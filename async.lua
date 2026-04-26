@@ -151,7 +151,14 @@ end
 -- //////////////////////////////////////////////////////////
 
 function task.wait(seconds)
-    return coroutine.yield(seconds or 0)
+    local val1, val2 = coroutine.yield(seconds or 0)
+
+    -- If val1 is a table (the task object), the real dt is val2
+    if type(val1) == "table" then
+        return val2
+    end
+    -- Otherwise, val1 is the dt
+    return val1
 end
 
 function task.WaitForChild(parent, childName, timeoutSeconds)
