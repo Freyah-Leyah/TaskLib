@@ -2,7 +2,8 @@
     "name": "TaskLib",
     "description": "Adds a task library to make it easier to run code asynchronously.",
     "author": "Freyah",
-    "version": "0.1",
+	"image" : "icon.png",
+    "version": "v0.1",
     "color" : "0 0 0",
     "priority" : 99999,
     "hooks" : [
