@@ -10,7 +10,7 @@ TaskLib is accessible globally via the task table (or `_G.task`). Because it aut
 
 **Note**: For stability reasons, there is a hardcoded limit of 100 task resumes per frame. If this limit is reached, any remaining tasks will be skipped for the current frame and resumed during the next one. (You will probably never reach that limit though)
 
-## Core API: Managing Tasks
+## ❗Core API: Managing Tasks
 
 These functions are used to initialize, terminate, and monitor tasks.
 
@@ -71,11 +71,14 @@ Logs and returns the total number of currently active tasks. Useful for memory m
 **Example:**
 ```lua
 local activeCount = task.stats()  
-      if activeCount > 50 then  
-          log("[Warning] High number of active tasks: " .. tostring(activeCount))
-      end
+if activeCount > 50 then  
+      log("[Warning] High number of active tasks: " .. tostring(activeCount))
+end
 ```
-## Async Helpers (Yielding)
+
+---
+
+## ⏹️ Async Helpers (Yielding)
 
 These functions yield the current coroutine. They must be called from within a task.spawn callback.
 
@@ -100,7 +103,8 @@ Yields the coroutine until a specific key is populated within a parent table.
 - **parent** _(table)_: The table to monitor.
 - **childName** _(string/any)_: The key expected to be assigned in the parent table.
 - **timeoutSeconds** _(number, optional)_: Maximum time to wait in seconds. If exceeded, logs a warning and returns nil.
-- **Returns:** The assigned value, or nil if the timeout is reached.
+    -  _Note: Infinite yield possible if timeout isn't provided and child never appears!_
+- **Returns:** The assigned value _(child)_, or nil if the timeout is reached.
 
 **Example:**
 ```lua
@@ -114,7 +118,10 @@ task.spawn(function()
   end  
 end)
 ```
-## Timer Utilities
+
+---
+
+## 🕑 Timer Utilities
 
 Utility wrappers for common delay and interval operations. These do not require manual coroutine initialization.
 
@@ -130,7 +137,7 @@ _(Alias: task.timeout)_
 
 **Example:**
 ```lua
-task.delay(3.0, function()  
+task.delay(3, function()  
     log("This executes exactly 3 seconds later.")  
 end, "DelayedLog")
 ```
@@ -146,7 +153,7 @@ _(Alias: task.loopInf)_
 
 **Example:**
 ```lua
-task.every(1.0, function()  
+task.every(1, function()  
     local player = managers.player:player_unit()  
     
     if not alive(player) then 
@@ -175,8 +182,48 @@ Executes a callback repeatedly at a specified interval, terminating automaticall
 ```lua
 task.loopUntil(0.5, function()  
       log("Checking conditions...")  
-      -- Condition logic here  
+      -- Code here 
       return true  
 end, 5.0, "StartupCheck")  
 -- This will log every 0.5 seconds for a maximum of 5 seconds.
+```
+
+---
+
+## 🛑 Task Cancellation Methods
+You have several ways to stop a loop or timeout task.
+1. Recommended Way
+- Every task receives itself as the first argument. You can call :cancel() directly on it to stop execution.
+```lua
+local count = 0
+task.loopInf(0.5, function(loop)
+    count = count + 1
+    log("Looping...")
+    
+    if count >= 15 then
+        loop:cancel() -- Clean and easy!
+    end
+end)
+```
+
+2. Self-Termination Way
+- If your callback function returns false, the scheduler will automatically kill the task.
+```lua
+task.every(1, function()
+    if some_condition_met then
+        return false 
+    end
+end)
+```
+
+3. The External Way
+- If you have the task handle stored in a variable, you can cancel it from outside the task.
+```lua
+local my_timer = task.timeout(10, function() ... end)
+
+-- Cancel via API call:
+task.cancel(my_timer)
+
+-- Or cancel via property:
+my_timer.cancelled = true
 ```
